@@ -9,6 +9,7 @@ import pyrogram
 from pyrogram import Client, filters
 from pyrogram.types.messages_and_media import message
 from pyrogram.types import User, Message
+from details import api_id, api_hash, bot_token, auth_users, sudo_user, log_channel, txt_channel
 from subprocess import getstatusoutput
 import logging
 import os
