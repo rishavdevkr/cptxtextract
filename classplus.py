@@ -330,3 +330,4 @@ async def classplus(client, message):
             quote=True
         )
 
+bot.run()
