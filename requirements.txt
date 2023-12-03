@@ -1,0 +1,10 @@
+pyrogram
+tgcrypto
+requests
+pyromod
+yt-dlp
+ffmpeg
+beautifulsoup4==4.9.3
+bs4==0.0.1
+aiohttp
+aiofiles
