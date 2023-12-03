@@ -200,3 +200,5 @@ async def account_login(bot: Client, m: Message):
         #await m.reply_document(f"{nam2}.txt")
         await input3.delete(True)
         await m.reply_text("**Now Press /cpd to Download **")
+
+bot.run()
