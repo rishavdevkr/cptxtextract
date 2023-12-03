@@ -30,7 +30,7 @@ async def start(bot, update):
        await update.reply_text("Hi i am **Classplus txt Downloader**.\n\n"
                               "**NOW:-** "
                                        
-                                       "Press **/login** to continue..\n\n")
+                                       "Press **/cp** to continue..\n\n")
 @bot.on_message(filters.command(["cp"]) & ~filters.edited)
 async def account_login(bot: Client, m: Message):
     global cancel
