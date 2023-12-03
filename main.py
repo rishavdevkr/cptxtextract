@@ -31,7 +31,7 @@ async def start(bot, update):
                               "**NOW:-** "
                                        
                                        "Press **/cp** to continue..\n\n")
-@bot.on_message(filters.command(["cp"])
+@bot.on_message(filters.command(["cp"]))
 async def account_login(bot: Client, m: Message):
     global cancel
     cancel = False
