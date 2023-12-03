@@ -99,9 +99,7 @@ async def account_login(bot: Client, m: Message):
                 'OR\n\n'
                 'Access Token'
                 '**'
-            ),
-            reply_to_message_id = message.id
-        )
+            ))
         creds = reply.text
 
         session = requests.Session()
