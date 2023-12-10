@@ -2,7 +2,7 @@
 
 ## Repo views counter
 
-![visitor badge](https://visitor-badge.laobi.icu/badge?page_id=rishavdevkr/cptxtextract&query_only=true)
+![visitor badge](https://visitor-badge.laobi.icu/badge?page_id=rishavdevkr&query_only=true)
 
 ## Deploy To Heroku
 
