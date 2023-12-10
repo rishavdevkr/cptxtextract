@@ -2,7 +2,7 @@
 
 ## Repo views counter
 
-![Visitor Count](https://profile-counter.glitch.me/{rishavdevkr/cptxtextract/}/count.svg)
+![visitor badge](https://visitor-badge.laobi.icu/badge?page_id=rishavdevkr/cptxtextract&query_only=true)
 
 ## Deploy To Heroku
 
