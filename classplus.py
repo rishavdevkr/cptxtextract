@@ -1,25 +1,38 @@
 import requests
 import json
-import requests
-import json
 import subprocess
 from pyrogram.types.messages_and_media import message
 import helper
 from pyromod import listen
 from pyrogram.types import Message
 import pyrogram
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle
 from pyrogram.types.messages_and_media import message
 from pyrogram.types import User, Message
 from details import api_id, api_hash, bot_token, auth_users, sudo_user, log_channel, txt_channel
 from subprocess import getstatusoutput
 from utils import get_datetime_str, create_html_file
-import logging
+import asyncio, logging
+from logging.handlers import RotatingFileHandler
+import tgcrypto
 import os
 import sys
 import re
-
 import requests
+
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(name)s - %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+    handlers=[
+        RotatingFileHandler(
+            "log.txt", maxBytes=5000000, backupCount=10
+        ),
+        logging.StreamHandler(),
+    ],
+)
+
 bot = Client(
     "bot",
     api_id= 22779671,
@@ -27,7 +40,6 @@ bot = Client(
     bot_token= "6152562853:AAGimPmtvHjqcE8em9iDMH-QAjkM8133P0c"
 )
 
-logger = logging.getLogger()
 @bot.on_message(filters.command(["start"]))
 async def start(bot, update):
        await update.reply_text("Hi i am **Classplus txt Downloader**.\n\n"
