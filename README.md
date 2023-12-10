@@ -1,9 +1,5 @@
 # Rishav'S Classplus Text downloader
 
-## Repo views counter
-
-![visitor badge](https://visitor-badge.laobi.icu/badge?page_id=rishavdevkr&query_only=true)
-
 ## Deploy To Heroku
 
 <a href="https://heroku.com/deploy?template=https://github.com/rishavdevkr/cptxtextractor">
