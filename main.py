@@ -17,8 +17,21 @@ import tgcrypto
 import os
 import sys
 import re
-
 import requests
+
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(name)s - %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+    handlers=[
+        RotatingFileHandler(
+            "log.txt", maxBytes=5000000, backupCount=10
+        ),
+        logging.StreamHandler(),
+    ],
+)
+
 bot = Client(
     "bot",
     api_id= 22779671,
