@@ -2,7 +2,7 @@
 
 ## Repo views counter
 
-![Visitor Count](https://profile-counter.glitch.me/{rishavdevkr/cptxtextract}/count.svg)
+![Visitor Count](https://profile-counter.glitch.me/{rishavdevkr/cptxtextract/}/count.svg)
 
 ## Deploy To Heroku
 
