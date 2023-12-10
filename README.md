@@ -1,4 +1,8 @@
-# Rishav-Notes
+# Rishav'S Classplus Text downloader
+
+## Repo views counter
+
+![Visitor Count](https://profile-counter.glitch.me/{rishavdevkr}/count.svg)
 
 ## Deploy To Heroku
 
