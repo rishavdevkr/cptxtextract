@@ -1,1 +1,1 @@
-worker: python classplus.py
+worker: python main.py
