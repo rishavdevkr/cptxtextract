@@ -128,18 +128,18 @@ async def account_login(bot: Client, m: Message):
         
         )
         creds = reply.text
+print(f"Received credentials: {creds}")  # Add this line for debugging
+session = requests.Session()
+session.headers.update(headers)
 
-        session = requests.Session()
-        session.headers.update(headers)
+logged_in = False
 
-        logged_in = False
-
-        if '\n' in creds:
-            credentials = creds.split('\n')
-            if len(credentials) != 2:
-                raise Exception('Invalid credentials format. Please provide exactly two lines: Organisation Code and Phone Number.')
-            org_code, phone_no = [cred.strip() for cred in credentials]
-
+if '\n' in creds:
+    credentials = creds.split('\n')
+    if len(credentials) != 2:
+        raise Exception('Invalid credentials format. Please provide exactly two lines: Organisation Code and Phone Number.')
+    org_code, phone_no = [cred.strip() for cred in credentials]
+    
             if org_code.isalpha() and phone_no.isdigit() and len(phone_no) == 10:
                 res = session.get(f'{api}/orgs/{org_code}')
 
