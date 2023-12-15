@@ -52,7 +52,7 @@ bot = Client(
     "bot",
     api_id= 22779671,
     api_hash= "125d8d88b77309dc3b154cbbfc2dacb2",    
-    bot_token= "6847175705:AAHbkU8GFmzoxR9dCQTr6RuZ4NQsev5ufz0"
+    bot_token= "6152562853:AAGimPmtvHjqcE8em9iDMH-QAjkM8133P0c"
 )
 
 @bot.on_message(filters.command(["start"]))
@@ -64,58 +64,56 @@ async def start(bot, update):
 
 @bot.on_message(filters.command(["classplus"]))
 async def account_login(bot: Client, m: Message):
+    try:
+        def get_course_content(session, course_id, folder_id=0):
 
-    def get_course_content(session, course_id, folder_id=0):
+            fetched_contents = []
 
-        fetched_contents = []
+            params = {
+                'courseId': course_id,
+                'folderId': folder_id,
+            }
 
-        params = {
-            'courseId': course_id,
-            'folderId': folder_id,
+            res = session.get(f'{api}/course/content/get', params=params)
+
+            if res.status_code == 200:
+                res = res.json()
+
+                contents = res['data']['courseContent']
+
+                for content in contents:
+
+                    if content['contentType'] == 1:
+                        resources = content['resources']
+
+                        if resources['videos'] or resources['files']:
+                            sub_contents = get_course_content(session, course_id, content['id'])
+                            fetched_contents += sub_contents
+
+                    else:
+                        name = content['name']
+                        url = content['url']
+                        fetched_contents.append(f'{name}: {url}')
+
+            return fetched_contents
+
+        headers = {
+            'accept-encoding': 'gzip',
+            'accept-language': 'EN',
+            'api-version'    : '35',
+            'app-version'    : '1.4.73.2',
+            'build-number'   : '35',
+            'connection'     : 'Keep-Alive',
+            'content-type'   : 'application/json',
+            'device-details' : 'Xiaomi_Redmi 7_SDK-32',
+            'device-id'      : 'c28d3cb16bbdac01',
+            'host'           : 'api.classplusapp.com',
+            'region'         : 'IN',
+            'user-agent'     : 'Mobile-Android',
+            'webengage-luid' : '00000187-6fe4-5d41-a530-26186858be4c'
         }
 
-        res = session.get(f'{api}/course/content/get', params=params)
-
-        if res.status_code == 200:
-            res = res.json()
-
-            contents = res['data']['courseContent']
-
-            for content in contents:
-
-                if content['contentType'] == 1:
-                    resources = content['resources']
-
-                    if resources['videos'] or resources['files']:
-                        sub_contents = get_course_content(session, course_id, content['id'])
-                        fetched_contents += sub_contents
-
-                else:
-                    name = content['name']
-                    url = content['url']
-                    fetched_contents.append(f'{name}: {url}')
-
-        return fetched_contents
-
-    headers = {
-        'accept-encoding': 'gzip',
-        'accept-language': 'EN',
-        'api-version'    : '35',
-        'app-version'    : '1.4.73.2',
-        'build-number'   : '35',
-        'connection'     : 'Keep-Alive',
-        'content-type'   : 'application/json',
-        'device-details' : 'Xiaomi_Redmi 7_SDK-32',
-        'device-id'      : 'c28d3cb16bbdac01',
-        'host'           : 'api.classplusapp.com',
-        'region'         : 'IN',
-        'user-agent'     : 'Mobile-Android',
-        'webengage-luid' : '00000187-6fe4-5d41-a530-26186858be4c'
-    }
-
-    api = 'https://api.classplusapp.com/v2'
-
-    try:
+        api = 'https://api.classplusapp.com/v2'
 
         reply = await m.reply(
             (
@@ -130,16 +128,17 @@ async def account_login(bot: Client, m: Message):
         
         )
         creds = reply.text
-    session = requests.Session()
-    session.headers.update(headers)
 
-    logged_in = False
+        session = requests.Session()
+        session.headers.update(headers)
 
-    if '\n' in creds:
-        credentials = creds.split('\n')
-        if len(credentials) != 2:
-            raise Exception('Invalid credentials format. Please provide exactly two lines: Organisation Code and Phone Number.')
-        org_code, phone_no = [cred.strip() for cred in credentials]
+        logged_in = False
+
+        if '\n' in creds:
+            credentials = creds.split('\n')
+            if len(credentials) != 2:
+                raise Exception('Invalid credentials format. Please provide exactly two lines: Organisation Code and Phone Number.')
+            org_code, phone_no = [cred.strip() for cred in credentials]
 
             if org_code.isalpha() and phone_no.isdigit() and len(phone_no) == 10:
                 res = session.get(f'{api}/orgs/{org_code}')
@@ -324,7 +323,7 @@ async def account_login(bot: Client, m: Message):
                                 html_file,
                                 caption=caption,
                                 file_name=f"{selected_course_name}.html",
-                                reply_to_message_id=reply.id
+                                                                reply_to_message_id=reply.id
                             )
 
                             os.remove(text_file)
@@ -357,3 +356,4 @@ async def account_login(bot: Client, m: Message):
         )
 
 bot.run()
+
