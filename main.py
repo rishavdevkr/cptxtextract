@@ -324,19 +324,16 @@ try:
                 raise Exception('Failed to get courses.')
             
 
+   
     except Exception as error:
-
-        print(f'Error : {error}')
-
-        await reply.reply(
+        LOGGER.error(f'Error: {error}')  # Log the error
+        await m.reply(
             (
                 '**'
-                f'Error : {error}'
+                f'Error: {error}'
                 '**'
             ),
             quote=True
         )
 
-
-bot.run()           
-            
+bot.run()
