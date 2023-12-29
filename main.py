@@ -101,8 +101,7 @@ async def account_login(bot: Client, m: Message):
     api = 'https://api.classplusapp.com/v2'
 
     try:
-
-        reply = await m.reply(
+reply = await m.reply(
             (
                 '**'
                 'Send your credentials as shown below.\n\n'
@@ -112,7 +111,6 @@ async def account_login(bot: Client, m: Message):
                 'Access Token'
                 '**'
             ),
-        
         )
         creds = reply.text
 
@@ -327,13 +325,11 @@ async def account_login(bot: Client, m: Message):
             
 
     except Exception as error:
-
-        print(f'Error : {error}')
-
+        LOGGER.error(f'Error: {error}')  # Log the error
         await m.reply(
             (
                 '**'
-                f'Error : {error}'
+                f'Error: {error}'
                 '**'
             ),
             quote=True
