@@ -1,7 +1,6 @@
 pyrogram
 tgcrypto
 requests
-pyromod
 yt-dlp
 ffmpeg
 beautifulsoup4==4.9.3
@@ -9,7 +8,11 @@ bs4==0.0.1
 aiohttp
 aiofiles
 mediainfo
+hachoir
 cloudscraper
+pycryptodome
+pytz
+pyromod
 helper
 psutil
 py-tgcalls==0.6.0
