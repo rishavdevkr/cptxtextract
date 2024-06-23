@@ -11,7 +11,7 @@
 ```
 sudo apt update
 git clone your_repo_link
-cd Save_restricted_bot
+cd cptxtextract
 pip3 install -r requirements.txt
 python3 main.py
 Note:- use (nohup python3 main.py) to run 24×7
