@@ -1,3 +1,4 @@
+import requests, os, sys, re
 import requests
 import json
 import subprocess
@@ -10,28 +11,38 @@ from pyrogram import Client, filters, idle
 from pyrogram.types.messages_and_media import message
 from pyrogram.types import User, Message
 from details import api_id, api_hash, bot_token, auth_users, sudo_user, log_channel, txt_channel
+from details import SUDO_USERS
 from subprocess import getstatusoutput
 from utils import get_datetime_str, create_html_file
 import asyncio, logging
 from logging.handlers import RotatingFileHandler
 import tgcrypto
-import os
-import sys
-import re
-import requests
+import datetime
 
-LOGGER = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)s - %(message)s",
-    datefmt="%d-%b-%y %H:%M:%S",
-    handlers=[
-        RotatingFileHandler(
-            "log.txt", maxBytes=5000000, backupCount=10
-        ),
-        logging.StreamHandler(),
-    ],
-)
+api = 'https://api.classplusapp.com/v2'
+
+# ------------------------------------------------------------------------------------------------------------------------------- #
+
+def create_html_file(file_name, batch_name, contents):
+    tbody = ''
+    parts = contents.split('\n')
+    for part in parts:
+        split_part = [item.strip() for item in part.split(':', 1)]
+    
+        text = split_part[0] if split_part[0] else 'Untitled'
+        url = split_part[1].strip() if len(split_part) > 1 and split_part[1].strip() else 'No URL'
+
+        tbody += f'<tr><td>{text}</td><td><a href="{url}" target="_blank">{url}</a></td></tr>'
+
+    with open('cptxtextract/template.html', 'r') as fp:
+        file_content = fp.read()
+    title = batch_name.strip()
+    with open(file_name, 'w') as fp:
+        fp.write(file_content.replace('{{tbody_content}}', tbody).replace('{{batch_name}}', title))
+
+
+ # ------------------------------------------------------------------------------------------------------------------------------- #
+
 
 bot = Client(
     "bot",
@@ -49,10 +60,11 @@ async def start(bot, update):
 
 @bot.on_message(filters.command(["classplus"]))
 async def account_login(bot: Client, m: Message):
+# ------------------------------------------------------------------------------------------------------------------------------- #
 
-    def get_course_content(session, course_id, folder_id=0):
 
-        fetched_contents = []
+def get_course_content(session, course_id, folder_id=0):
+        fetched_contents = ""
 
         params = {
             'courseId': course_id,
@@ -62,25 +74,63 @@ async def account_login(bot: Client, m: Message):
         res = session.get(f'{api}/course/content/get', params=params)
 
         if res.status_code == 200:
-            res = res.json()
+            res_json = res.json() 
 
-            contents = res['data']['courseContent']
+            contents = res_json.get('data', {}).get('courseContent', [])
 
             for content in contents:
-
                 if content['contentType'] == 1:
-                    resources = content['resources']
+                    resources = content.get('resources', {})
 
-                    if resources['videos'] or resources['files']:
+                    if resources.get('videos') or resources.get('files'):
                         sub_contents = get_course_content(session, course_id, content['id'])
                         fetched_contents += sub_contents
+                
+                elif content['contentType'] == 2:
+                    name = content.get('name', '')
+                    id = content.get('contentHashId', '')
+
+                    headers = {
+                        "Host": "api.classplusapp.com",
+                        "x-access-token": "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIzNDIwMDUsIm9yZ0lkIjo1NDI0MjEsInR5cGUiOjEsIm1vYmlsZSI6IjkxODI5ODczMDAzNiIsIm5hbWUiOiJTdWRoYW5zaHUgSmhhIiwiZW1haWwiOiJzdWRoYW5zaHVqaGExNTFAZ21haWwuY29tIiwiaXNJbnRlcm5hdGlvbmFsIjowLCJkZWZhdWx0TGFuZ3VhZ2UiOiJFTiIsImNvdW50cnlDb2RlIjoiSU4iLCJjb3VudHJ5SVNPIjoiOTEiLCJ0aW1lem9uZSI6IkdNVCs1OjMwIiwiaXNEaXkiOnRydWUsIm9yZ0NvZGUiOiJ1Y3Z2YW8iLCJpc0RpeVN1YmFkbWluIjowLCJmaW5nZXJwcmludElkIjoiOGE5NTlhMGQ1Y2UyNjBkNzJhMDVhMzcxYTBhYzk5YmUiLCJpYXQiOjE3MDc0OTc2OTAsImV4cCI6MTcwODEwMjQ5MH0.68JhYbWAjf1B0a6hD4OGSmVhhH2WF97DX8DMJAfo5CkIwIVWABMugHN0Mz43LUoY",
+                        "User-Agent": "Mobile-Android",
+                        "Accept": "application/json, text/plain, */*",
+                        "Accept-Encoding": "gzip, deflate, br",
+                        "Accept-Language": "en",
+                        "Origin": "https://web.classplusapp.com",
+                        "Referer": "https://web.classplusapp.com/",
+                        "Region": "IN",
+                        "Sec-Ch-Ua": "\"Not A(Brand\";v=\"99\", \"Microsoft Edge\";v=\"121\", \"Chromium\";v=\"121\"",
+                        "Sec-Ch-Ua-Mobile": "?0",
+                        "Sec-Ch-Ua-Platform": "\"Windows\"",
+                        "Sec-Fetch-Dest": "empty",
+                        "Sec-Fetch-Mode": "cors",
+                        "Sec-Fetch-Site": "same-site",
+                    }
+
+                    params = {
+                        'contentId': id
+                    }
+
+                    r = requests.get('https://api.classplusapp.com/cams/uploader/video/jw-signed-url', headers=headers, params=params)
+                    url = r.json()['url']
+
+                    content = f'{name}:{url}\n'
+                    fetched_contents += content
 
                 else:
-                    name = content['name']
-                    url = content['url']
-                    fetched_contents.append(f'{name}: {url}')
+                    name = content.get('name', '')
+                    url = content.get('url', '')
+                    content = f'{name}:{url}\n'
+                    fetched_contents += content
 
         return fetched_contents
+
+
+
+# ------------------------------------------------------------------------------------------------------------------------------- #
+
+async def classplus_txt(app, message):   
 
     headers = {
         'accept-encoding': 'gzip',
@@ -98,24 +148,21 @@ async def account_login(bot: Client, m: Message):
         'webengage-luid' : '00000187-6fe4-5d41-a530-26186858be4c'
     }
 
-    api = 'https://api.classplusapp.com/v2'
+    headers2 = {
+        "Api-Version": "43",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Device-Id": "1706954623055",
+        "Origin": "https://web.classplusapp.com",
+        "Referer": "https://web.classplusapp.com/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    }
+    
+    try:
+        input = await app.ask(message.chat.id, text="SEND YOUR CREDENTIALS AS SHOWN BELOW\n\nORGANISATION CODE:\n\nPHONE NUMBER:\n\nOR SEND\nACCESS TOKEN:")
 
-try:
-        reply = await m.reply(
-            (
-                '**'
-                'Send your credentials as shown below.\n\n'
-                'Organisation Code\n'
-                'Phone Number\n\n'
-                'OR\n\n'
-                'Access Token'
-                '**'
-            ),
-        )
-        creds = reply.text
-
+        creds = input.text
         session = requests.Session()
-        session.headers.update(headers)
+        session.headers.update(headers2)
 
         logged_in = False
 
@@ -133,10 +180,9 @@ try:
                     data = {
                         'countryExt': '91',
                         'mobile'    : phone_no,
-                        'viaSms'    : 1,
+                        'orgCode'   : org_code,
                         'orgId'     : org_id,
-                        'eventType' : 'login',
-                        'otpHash'   : 'j7ej6eW5VO'
+                        'viaSms'    : 1,
                     }
         
                     res = session.post(f'{api}/otp/generate', data=json.dumps(data))
@@ -146,65 +192,38 @@ try:
 
                         session_id = res['data']['sessionId']
 
-                        reply = await message.chat.ask(
-                            (
-                                '**'
-                                'Send OTP ?'
-                                '**'
-                            )
-                            ,reply_to_message_id = reply.id
-                        )
+                        user_otp = await app.ask(message.chat.id, text="Send your otp ")
 
-                        if reply.text.isdigit():
-                            otp = reply.text.strip()
+                        if user_otp.text.isdigit():
+                            otp = user_otp.text.strip()
 
                             data = {
-                                'otp'          : otp,
-                                'sessionId'    : session_id,
-                                'orgId'        : org_id,
-                                'fingerprintId': 'a3ee05fbde3958184f682839be4fd0f7',
-                                'countryExt'   : '91',
-                                'mobile'       : phone_no,
+                                "otp": otp,
+                                "countryExt": "91",
+                                "sessionId": session_id,
+                                "orgId": org_id,
+                                "fingerprintId": "",
+                                "mobile": phone_no
                             }
 
                             res = session.post(f'{api}/users/verify', data=json.dumps(data))
-
-                            if res.status_code == 200:
-                                res = res.json()
-
+                            res = res.json()
+                            if res['status'] == 'success':
+                                await app.send_message(message.chat.id, res)
                                 user_id = res['data']['user']['id']
                                 token = res['data']['token']
-
                                 session.headers['x-access-token'] = token
 
-                                reply = await reply.reply(
-                                    (
-                                        '**'
-                                        'Your Access Token for future uses - \n\n'
-                                        '**'
-                                        '<pre>'
-                                        f'{token}'
-                                        '</pre>'
-                                    ),
-                                    quote=True
-                                )
-
+                                await message.reply_text(f"Your access token for future uses -\n\n{token}")
+                                
                                 logged_in = True
 
                             else:
-                                raise Exception('Failed to verify OTP.')
-                            
-                        else:
-                            raise Exception('Failed to validate OTP.')
-                        
-                    else:
-                        raise Exception('Failed to generate OTP.')
-                    
-                else:
-                    raise Exception('Failed to get organization Id.')
-                
-            else:
-                raise Exception('Failed to validate credentials.')
+                                raise Exception('Failed to verify OTP.')  
+                        raise Exception('Failed to validate OTP.')
+                    raise Exception('Failed to generate OTP.')    
+                raise Exception('Failed to get organization Id.')
+            raise Exception('Failed to validate credentials.')
 
         else:
 
@@ -245,95 +264,51 @@ try:
                         name = course['name']
                         text += f'{cnt + 1}. {name}\n'
 
-                    reply = await message.chat.ask(
-                        (
-                            '**'
-                            'Send index number of the course to download.\n\n'
-                            f'{text}'
-                            '**'
-                        ),
-                        reply_to_message_id = reply.id
-                    )
+                    num = await app.ask(message.chat.id, text=f"send index number of the course to download\n\n{text}")
+                        
+                    if num.text.isdigit() and len(num.text) <= len(courses):
 
-                    if reply.text.isdigit() and len(reply.text) <= len(courses):
-
-                        selected_course_index = int(reply.text.strip())
+                        selected_course_index = int(num.text.strip())
 
                         course = courses[selected_course_index - 1]
 
                         selected_course_id = course['id']
                         selected_course_name = course['name']
 
-                        loader = await reply.reply(
-                            (
-                                '**'
-                                'Extracting course...'
-                                '**'
-                            ),
-                            quote=True
-                        )
+                        msg  = await message.reply_text("Now your extracting your course")
+                            
 
                         course_content = get_course_content(session, selected_course_id)
-
-                        await loader.delete()
+                        await msg.delete()
 
                         if course_content:
 
-                            caption = (
-                                '**'
-                                'App Name : Classplus\n'
-                                f'Batch Name : {selected_course_name}'
-                                '**'
-                            )
+                            caption = (f"App Name : Classplus\nBatch Name : {selected_course_name}")
 
-                            text_file = f'assets/{get_datetime_str()}.txt'
-                            open(text_file, 'w').writelines(course_content)
+                            
+                            text_file = "Classplus"
+                            with open(f'{text_file}.txt', 'w') as f:
+                                f.write(f"{course_content}")
 
-                            await client.send_document(
-                                message.chat.id,
-                                text_file,
-                                caption=caption,
-                                file_name=f"{selected_course_name}.txt",
-                                reply_to_message_id=reply.id
-                            )
+                            await app.send_document(message.chat.id, document=f"{text_file}.txt", caption=caption)
 
-                            html_file = f'assets/{get_datetime_str()}.html'
+                            html_file = f'{text_file}.html'
                             create_html_file(html_file, selected_course_name, course_content)
 
-                            await client.send_document(
-                                message.chat.id,
-                                html_file,
-                                caption=caption,
-                                file_name=f"{selected_course_name}.html",
-                                reply_to_message_id=reply.id
-                            )
-
-                            os.remove(text_file)
+                            await app.send_document(message.chat.id, html_file, caption=caption)
+                            os.remove(f'{text_file}.txt')
                             os.remove(html_file)
+                            
 
                         else:
                             raise Exception('Did not found any content in course.')
-
-                    else:
-                        raise Exception('Failed to validate course selection.')
-
-                else:
-                    raise Exception('Did not found any course.')
-
-            else:
-                raise Exception('Failed to get courses.')
+                    raise Exception('Failed to validate course selection.')
+                raise Exception('Did not found any course.')
+            raise Exception('Failed to get courses.')
             
 
    
-    except Exception as error:
-        LOGGER.error(f'Error: {error}')  # Log the error
-        await m.reply(
-            (
-                '**'
-                f'Error: {error}'
-                '**'
-            ),
-            quote=True
-        )
+    except Exception as e:
+        print(f"Error: {e}")
 
 bot.run()
