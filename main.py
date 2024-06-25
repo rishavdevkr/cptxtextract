@@ -287,4 +287,3 @@ async def classplus_txt(app, message):
     except Exception as e:
         print(f"Error: {e}")
 
-bot.run()
