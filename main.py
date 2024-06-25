@@ -10,8 +10,7 @@ import pyrogram
 from pyrogram import Client, filters, idle
 from pyrogram.types.messages_and_media import message
 from pyrogram.types import User, Message
-from details import api_id, api_hash, bot_token, auth_users, sudo_user, log_channel, txt_channel
-from details import SUDO_USERS
+from details import API_ID, API_HASH, BOT_TOKEN, OWNER_ID, SUDO_USERS, CHANNEL_ID
 from subprocess import getstatusoutput
 from utils import get_datetime_str, create_html_file
 import asyncio, logging
