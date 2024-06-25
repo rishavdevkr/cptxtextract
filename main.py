@@ -40,29 +40,6 @@ def create_html_file(file_name, batch_name, contents):
     with open(file_name, 'w') as fp:
         fp.write(file_content.replace('{{tbody_content}}', tbody).replace('{{batch_name}}', title))
 
-
- # ------------------------------------------------------------------------------------------------------------------------------- #
-
-
-bot = Client(
-    "bot",
-    api_id= 22779671,
-    api_hash= "125d8d88b77309dc3b154cbbfc2dacb2",    
-    bot_token= "6847175705:AAHbkU8GFmzoxR9dCQTr6RuZ4NQsev5ufz0"
-)
-
-@bot.on_message(filters.command(["start"]))
-async def start(bot, update):
-       await update.reply_text("Hi i am **Classplus txt Downloader**.\n\n"
-                              "**NOW:-** "
-                                       
-                                       "Press **/classplus** to continue..\n\n")
-
-@bot.on_message(filters.command(["classplus"]))
-async def account_login(bot: Client, m: Message):
-# ------------------------------------------------------------------------------------------------------------------------------- #
-
-
 def get_course_content(session, course_id, folder_id=0):
         fetched_contents = ""
 
